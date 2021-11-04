@@ -1,0 +1,3 @@
+/home/garnik-kh/git-repo/Data-Structers/avl-prj/build/CMakeFiles/rebuild_cache.dir
+/home/garnik-kh/git-repo/Data-Structers/avl-prj/build/CMakeFiles/edit_cache.dir
+/home/garnik-kh/git-repo/Data-Structers/avl-prj/build/CMakeFiles/avl.out.dir
