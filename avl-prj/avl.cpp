@@ -37,9 +37,9 @@ private:
         void balance_update()
         {
             if(left_child == nullptr && right_child == nullptr) balance = 0;
-            else if(left_child != nullptr && right_child == nullptr) balance = -(left_child->height);
-            else if(left_child == nullptr && right_child != nullptr) balance = right_child->height;
-            else balance = left_child->height - right_child->height;
+            else if(left_child != nullptr && right_child == nullptr) balance = -(left_child->height + 1);
+            else if(left_child == nullptr && right_child != nullptr) balance = right_child->height + 1;
+            else balance = right_child->height - left_child->height;
         }
 
         void height_update()
@@ -212,7 +212,7 @@ public:
         }
     }
 
-    void print(size_t option = 0, std::ostream& os = std::cout)
+    void print(size_t option = 1, std::ostream& os = std::cout)
     {
         assert(option < 3);
         os << sz << ": ";
@@ -265,7 +265,6 @@ public:
 
 int main()
 {
-    AVL tree;
 
     return 0;
 }
