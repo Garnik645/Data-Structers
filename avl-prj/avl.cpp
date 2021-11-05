@@ -28,6 +28,20 @@ private:
             // std::cout << "DEST " << value << std::endl;
         }
         
+        void update()
+        {
+            height_update();
+            balance_update();
+        }
+
+        void balance_update()
+        {
+            if(left_child == nullptr && right_child == nullptr) balance = 0;
+            else if(left_child != nullptr && right_child == nullptr) balance = -(left_child->height);
+            else if(left_child == nullptr && right_child != nullptr) balance = right_child->height;
+            else balance = left_child->height - right_child->height;
+        }
+
         void height_update()
         {
             if(left_child == nullptr && right_child == nullptr) height = 0;
@@ -67,7 +81,7 @@ private:
             {
                 return false;
             }
-            if(result) height_update();
+            if(result) update();
             return result;
         }
 
@@ -157,7 +171,7 @@ private:
                 }
                 return true;
             }
-            if(result) height_update();
+            if(result) update();
             return result;
         }
         
@@ -166,7 +180,7 @@ private:
             if(left_child != nullptr)
             {
                 int result = left_child->successor(k);
-                height_update();
+                update();
                 return result;
             }
             else
@@ -252,13 +266,6 @@ public:
 int main()
 {
     AVL tree;
-
-    tree.insert(5);
-    tree.insert(7);
-    tree.insert(6);
-    tree.print(AVL_HEIGHT);
-    tree.remove(5);
-    tree.print(AVL_HEIGHT);
 
     return 0;
 }
