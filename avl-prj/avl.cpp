@@ -351,14 +351,3 @@ public:
         return dummy->node_find(x);
     }
 };
-
-int main()
-{
-    AVL tree;
-    for(int i = 0; i < 1000; ++i)
-    {
-        tree.insert(i);
-    }
-    tree.remove(253);
-    std::cout << tree.find(253);
-}
