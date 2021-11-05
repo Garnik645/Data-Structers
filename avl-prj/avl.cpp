@@ -117,29 +117,30 @@ private:
             }
             else
             {
-                value = right_child->successor();
+                value = right_child->successor(value);
             }
             return true;
             
         }
         
-        int successor()
+        int successor(int k)
         {
             if(left_child != nullptr)
             {
-                return left_child->successor();
+                return left_child->successor(k);
             }
             else
             {
                 int x = value;
-                node_remove(x);
+                value = k;
+                node_remove(value);
                 return x;
             }
         }
     };
 
     std::unique_ptr<Node> root = nullptr;
-    size_t sz;
+    size_t sz = 0;
 
 public:
     AVL() = default;
@@ -159,9 +160,11 @@ public:
 
     void print(std::ostream& os)
     {
+        os << sz << ": ";
         if(root == nullptr)
         {
             os << "Empty" << std::endl;
+            return;
         }
         
         root->node_print(os);
@@ -174,13 +177,25 @@ public:
 
         if(root->value == x)
         {
-            if(sz == 1)
+            if(root->left_child == nullptr && root->right_child == nullptr)
             {
                 root = nullptr;
             }
+            else if(root->left_child != nullptr && root->right_child == nullptr)
+            {
+                Node* temp = root.get();
+                std::swap(root->left_child, root);
+                temp->left_child = nullptr;
+            }
+            else if(root->left_child == nullptr && root->right_child != nullptr)
+            {
+                Node* temp = root.get();
+                std::swap(root->right_child, root);
+                temp->right_child = nullptr;
+            }
             else
             {
-                root->value = root->right_child->successor();
+                root->value = root->right_child->successor(root->value);
             }
             --sz;
         }
@@ -196,5 +211,17 @@ public:
 int main()
 {
     AVL tree;
+    tree.print(std::cout);
+    tree.add(2);
+    tree.print(std::cout);
+    tree.add(3);
+    tree.add(1);
+    tree.print(std::cout);
+    tree.remove(2);
+    tree.print(std::cout);
+    tree.remove(3);
+    tree.print(std::cout);
+    tree.remove(1);
+    tree.print(std::cout);
     return 0;
 }
