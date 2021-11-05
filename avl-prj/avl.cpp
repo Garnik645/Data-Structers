@@ -6,6 +6,7 @@
 #define AVL_RESET 0
 #define AVL_BALANCE 1
 #define AVL_HEIGHT 2
+#define AVL_PARENT 3
 
 class AVL
 {
@@ -100,8 +101,12 @@ private:
             std::swap(temp, par);
             std::swap(par->left_child, temp->right_child);
             std::swap(par->left_child, temp);
+            std::swap(par->parent, par->left_child->parent);
+            par->left_child->parent = par.get();
             par->left_child->node_update();
             par->node_update();
+            if(par->left_child->right_child != nullptr)
+                par->left_child->right_child->parent = par->left_child.get();
         }
 
         void right_rotate(std::unique_ptr<Node>& par)
@@ -111,8 +116,12 @@ private:
             std::swap(temp, par);
             std::swap(par->right_child, temp->left_child);
             std::swap(par->right_child, temp);
+            std::swap(par->parent, par->right_child->parent);
+            par->right_child->parent = par.get();
             par->right_child->node_update();
             par->node_update();
+            if(par->right_child->left_child != nullptr)
+                par->right_child->left_child->parent = par->right_child.get();
         }
 
         bool node_insert(int x)
@@ -186,11 +195,13 @@ private:
                 {
                     if(parent->value > x)
                     {
+                        right_child->parent = parent;
                         std::swap(parent->left_child, right_child);
                         right_child = nullptr;
                     }
                     else
                     {
+                        right_child->parent = parent;
                         std::swap(parent->right_child, right_child);
                         right_child = nullptr;
                     }
@@ -199,11 +210,13 @@ private:
                 {
                     if(parent->value > x)
                     {
+                        left_child->parent = parent;
                         std::swap(parent->left_child, left_child);
                         right_child = nullptr;
                     }
                     else
                     {
+                        left_child->parent = parent;
                         std::swap(parent->right_child, left_child);
                         right_child = nullptr;
                     }
@@ -259,9 +272,16 @@ private:
             {
                 os << '(' << balance << ')';
             }
-            if(option == 2)
+            else if(option == 2)
             {
                 os << '(' << height << ')';
+            }
+            else if(option == 3)
+            {
+                if(parent->value == std::numeric_limits<int>::min())
+                    os << "(root)";
+                else
+                    os << '(' << parent->value << ')';
             }
             os << '[';
             if(left_child != nullptr)
@@ -283,9 +303,17 @@ private:
             }
             os << ']';
         }
-    };
 
-    
+        bool node_find(int x)
+        {
+            if(x > value && right_child == nullptr) return false;
+            if(x < value && left_child == nullptr) return false;
+
+            if(x > value) return right_child->node_find(x);
+            if(x < value) return left_child->node_find(x);
+            return true;
+        }
+    };
 
     std::unique_ptr<Node> dummy;
     size_t sz = 0;
@@ -307,7 +335,7 @@ public:
     
     void print(int option = 1, std::ostream& os = std::cout)
     {
-        assert(option < 3);
+        assert(option < 4);
         os << sz << ": ";
         if(dummy->right_child == nullptr)
         {
@@ -317,22 +345,20 @@ public:
         dummy->right_child->node_print(option, os);
         os << std::endl;
     }
+    
+    bool find(int x)
+    {
+        return dummy->node_find(x);
+    }
 };
 
 int main()
 {
     AVL tree;
-    tree.insert(1);
-    tree.print();
-    tree.insert(2);
-    tree.print();
-    tree.insert(3);
-    tree.print();
-    tree.insert(4);
-    tree.print();
-    tree.insert(5);
-    tree.print();
-    tree.insert(6);
-    tree.print();
-    return 0;
+    for(int i = 0; i < 1000; ++i)
+    {
+        tree.insert(i);
+    }
+    tree.remove(253);
+    std::cout << tree.find(253);
 }
