@@ -11,7 +11,9 @@ private:
         std::unique_ptr<Node> left_child = nullptr;
         std::unique_ptr<Node> right_child = nullptr;
 
-        Node(int x = 0, Node* pr = nullptr) : value(x), parent(pr) {}
+        Node(int x = 0, Node* pr = nullptr) : value(x), parent(pr) { std::cout << "CONS " << value << std::endl; }
+
+        ~Node() { std::cout << "DEST " << value << std::endl; }
         
         bool node_add(int x)
         {
@@ -47,15 +49,25 @@ private:
 
         void node_print(std::ostream& os)
         {
+            os << value << '[';
             if(left_child != nullptr)
             {
                 left_child->node_print(os);
             }
-            os << value << ' ';
+            else
+            {
+                os << 'x';
+            }
+            os << ',';
             if(right_child != nullptr)
             {
                 right_child->node_print(os);
             }
+            else
+            {
+                os << 'x';
+            }
+            os << ']';
         }
         
         bool node_remove(int x)
@@ -147,7 +159,10 @@ public:
 
     void print(std::ostream& os)
     {
-        if(root == nullptr) return;
+        if(root == nullptr)
+        {
+            os << "Empty" << std::endl;
+        }
         
         root->node_print(os);
         os << std::endl;
@@ -181,15 +196,5 @@ public:
 int main()
 {
     AVL tree;
-    tree.add(2);
-    tree.add(1);
-    tree.add(4);
-    tree.add(3);
-    tree.add(5);
-    tree.add(6);
-    tree.print(std::cout);
-    tree.remove(4);
-    tree.print(std::cout);
-    
     return 0;
 }
