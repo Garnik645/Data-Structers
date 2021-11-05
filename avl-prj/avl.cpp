@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <cassert>
+#include <limits>
 
 #define AVL_RESET 0
 #define AVL_BALANCE 1
@@ -16,25 +17,35 @@ private:
         std::unique_ptr<Node> left_child = nullptr;
         std::unique_ptr<Node> right_child = nullptr;
         int balance = 0;
-        size_t height = 0;
+        int height = 0;
 
         Node(int x = 0, Node* pr = nullptr) : value(x), parent(pr)
         {
-            // std::cout << "CONS " << value << std::endl;
+            /*
+            if(value == std::numeric_limits<int>::min())
+                std::cout << "CONS DUMMY" << std::endl;
+            else
+                std::cout << "CONS " << value << std::endl;
+            */
         }
 
         ~Node()
         {
-            // std::cout << "DEST " << value << std::endl;
-        }
-        
-        void update()
-        {
-            height_update();
-            balance_update();
+            /*
+            if(value == std::numeric_limits<int>::min())
+                std::cout << "DEST DUMMY" << std::endl;
+            else
+                std::cout << "DEST " << value << std::endl;
+            */
         }
 
-        void balance_update()
+        void node_update()
+        {
+            height_check();
+            balance_check();
+        }
+
+        void balance_check()
         {
             if(left_child == nullptr && right_child == nullptr) balance = 0;
             else if(left_child != nullptr && right_child == nullptr) balance = -(left_child->height + 1);
@@ -42,12 +53,66 @@ private:
             else balance = right_child->height - left_child->height;
         }
 
-        void height_update()
+        void height_check()
         {
             if(left_child == nullptr && right_child == nullptr) height = 0;
             else if(left_child != nullptr && right_child == nullptr) height = left_child->height + 1;
             else if(left_child == nullptr && right_child != nullptr) height = right_child->height + 1;
             else height = std::max(left_child->height, right_child->height) + 1;
+        }
+
+        void node_balance()
+        {
+            std::unique_ptr<Node>* ptr;
+            if(parent->value > value) ptr = &(parent->left_child);
+            else ptr = &(parent->right_child);
+
+            if(balance > 0)
+            {
+                if(right_child->balance > 0)
+                {
+                    left_rotate(*ptr);
+                }
+                else
+                {
+                    right_child->right_rotate(right_child);
+                    left_rotate(*ptr);
+                }
+            }
+            else
+            {
+                if(left_child->balance > 0)
+                {
+                    left_child->left_rotate(left_child);
+                    right_rotate(*ptr);
+                }
+                else
+                {
+                    right_rotate(*ptr);
+                }
+            }
+        }
+
+        void left_rotate(std::unique_ptr<Node>& par)
+        {
+            std::unique_ptr<Node> temp = nullptr;
+            std::swap(right_child, temp);
+            std::swap(temp, par);
+            std::swap(par->left_child, temp->right_child);
+            std::swap(par->left_child, temp);
+            par->left_child->node_update();
+            par->node_update();
+        }
+
+        void right_rotate(std::unique_ptr<Node>& par)
+        {
+            std::unique_ptr<Node> temp = nullptr;
+            std::swap(left_child, temp);
+            std::swap(temp, par);
+            std::swap(par->right_child, temp->left_child);
+            std::swap(par->right_child, temp);
+            par->right_child->node_update();
+            par->node_update();
         }
 
         bool node_insert(int x)
@@ -81,40 +146,18 @@ private:
             {
                 return false;
             }
-            if(result) update();
+            if(result)
+            {
+                node_update();
+                if(std::abs(balance) > 1)
+                {
+                    if(parent != nullptr)
+                    {
+                        node_balance();
+                    }
+                }
+            }
             return result;
-        }
-
-        void node_print(size_t option, std::ostream& os)
-        {
-            os << value;
-            if(option == 1)
-            {
-                os << '(' << balance << ')';
-            }
-            if(option == 2)
-            {
-                os << '(' << height << ')';
-            }
-            os << '[';
-            if(left_child != nullptr)
-            {
-                left_child->node_print(option, os);
-            }
-            else
-            {
-                os << 'x';
-            }
-            os << ',';
-            if(right_child != nullptr)
-            {
-                right_child->node_print(option, os);
-            }
-            else
-            {
-                os << 'x';
-            }
-            os << ']';
         }
         
         bool node_remove(int x)
@@ -171,7 +214,17 @@ private:
                 }
                 return true;
             }
-            if(result) update();
+            if(result)
+            {
+                node_update();
+                if(std::abs(balance) > 1)
+                {
+                    if(parent != nullptr)
+                    {
+                        node_balance();
+                    }
+                }
+            }
             return result;
         }
         
@@ -180,7 +233,14 @@ private:
             if(left_child != nullptr)
             {
                 int result = left_child->successor(k);
-                update();
+                node_update();
+                if(std::abs(balance) > 1)
+                {
+                    if(parent != nullptr)
+                    {
+                        node_balance();
+                    }
+                }
                 return result;
             }
             else
@@ -191,80 +251,88 @@ private:
                 return x;
             }
         }
+
+        void node_print(int option, std::ostream& os)
+        {
+            os << value;
+            if(option == 1)
+            {
+                os << '(' << balance << ')';
+            }
+            if(option == 2)
+            {
+                os << '(' << height << ')';
+            }
+            os << '[';
+            if(left_child != nullptr)
+            {
+                left_child->node_print(option, os);
+            }
+            else
+            {
+                os << 'x';
+            }
+            os << ',';
+            if(right_child != nullptr)
+            {
+                right_child->node_print(option, os);
+            }
+            else
+            {
+                os << 'x';
+            }
+            os << ']';
+        }
     };
 
-    std::unique_ptr<Node> root = nullptr;
+    
+
+    std::unique_ptr<Node> dummy;
     size_t sz = 0;
 
 public:
-    AVL() = default;
-
+    AVL() : dummy(std::make_unique<Node>(std::numeric_limits<int>::min())) {}
+    
     void insert(int x)
     {
-        if(root == nullptr)
-        {
-            root = std::make_unique<Node>(x);
-            ++sz;
-        }
-        else
-        {
-            if(root->node_insert(x)) ++sz;
-        }
-    }
-
-    void print(size_t option = 1, std::ostream& os = std::cout)
-    {
-        assert(option < 3);
-        os << sz << ": ";
-        if(root == nullptr)
-        {
-            os << "Empty" << std::endl;
-            return;
-        }
-        
-        root->node_print(option, os);
-        os << std::endl;
+        if(dummy->node_insert(x)) ++sz;
     }
     
     void remove(int x)
     {
-        if(root == nullptr)  return;
-
-        if(root->value == x)
-        {
-            if(root->left_child == nullptr && root->right_child == nullptr)
-            {
-                root = nullptr;
-            }
-            else if(root->left_child != nullptr && root->right_child == nullptr)
-            {
-                Node* temp = root.get();
-                std::swap(root->left_child, root);
-                temp->left_child = nullptr;
-            }
-            else if(root->left_child == nullptr && root->right_child != nullptr)
-            {
-                Node* temp = root.get();
-                std::swap(root->right_child, root);
-                temp->right_child = nullptr;
-            }
-            else
-            {
-                root->value = root->right_child->successor(root->value);
-            }
-            --sz;
-        }
-        else
-        {
-            if(root->node_remove(x)) --sz;
-        }
+        if(dummy->node_remove(x)) --sz;
     }
-
+    
     size_t size() { return sz; }
+    
+    void print(int option = 1, std::ostream& os = std::cout)
+    {
+        assert(option < 3);
+        os << sz << ": ";
+        if(dummy->right_child == nullptr)
+        {
+            os << "Empty" << std::endl;
+            return;
+        }
+        dummy->right_child->node_print(option, os);
+        os << std::endl;
+    }
 };
 
 int main()
 {
-
+    AVL tree;
+    tree.insert(1);
+    tree.print();
+    tree.insert(2);
+    tree.print();
+    tree.insert(3);
+    tree.print();
+    tree.insert(4);
+    tree.print();
+    tree.insert(5);
+    tree.print();
+    tree.insert(6);
+    tree.print();
     return 0;
 }
