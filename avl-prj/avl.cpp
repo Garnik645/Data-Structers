@@ -1,8 +1,10 @@
 #include <iostream>
 #include <memory>
+#include <cassert>
 
-#define BALANCE_SET true
-#define BALANCE_RESET false
+#define AVL_RESET 0
+#define AVL_BALANCE 1
+#define AVL_HEIGHT 2
 
 class AVL
 {
@@ -16,19 +18,25 @@ private:
         int balance = 0;
         size_t height = 0;
 
-        Node(int x = 0, Node* pr = nullptr) : value(x), parent(pr) { std::cout << "CONS " << value << std::endl; }
+        Node(int x = 0, Node* pr = nullptr) : value(x), parent(pr)
+        {
+            // std::cout << "CONS " << value << std::endl;
+        }
 
-        ~Node() { std::cout << "DEST " << value << std::endl; }
+        ~Node()
+        {
+            // std::cout << "DEST " << value << std::endl;
+        }
         
         void height_update()
         {
             if(left_child == nullptr && right_child == nullptr) height = 0;
-            else if(left_child != nullptr && right_child == nullptr) height = left_child->height;
-            else if(left_child == nullptr && right_child != nullptr) height = right_child->height;
-            else height = std::max(left_child->height, right_child->height);
+            else if(left_child != nullptr && right_child == nullptr) height = left_child->height + 1;
+            else if(left_child == nullptr && right_child != nullptr) height = right_child->height + 1;
+            else height = std::max(left_child->height, right_child->height) + 1;
         }
 
-        bool node_add(int x)
+        bool node_insert(int x)
         {
             bool result = false;
             if(x < value)
@@ -40,7 +48,7 @@ private:
                 }
                 else
                 {
-                    result = left_child->node_add(x);
+                    result = left_child->node_insert(x);
                 }
             }
             else if(x > value)
@@ -52,7 +60,7 @@ private:
                 }
                 else
                 {
-                    result = right_child->node_add(x);
+                    result = right_child->node_insert(x);
                 }
             }
             else
@@ -63,17 +71,21 @@ private:
             return result;
         }
 
-        void node_print(std::ostream& os, bool bf)
+        void node_print(size_t option, std::ostream& os)
         {
             os << value;
-            if(bf)
+            if(option == 1)
             {
                 os << '(' << balance << ')';
+            }
+            if(option == 2)
+            {
+                os << '(' << height << ')';
             }
             os << '[';
             if(left_child != nullptr)
             {
-                left_child->node_print(os, bf);
+                left_child->node_print(option, os);
             }
             else
             {
@@ -82,7 +94,7 @@ private:
             os << ',';
             if(right_child != nullptr)
             {
-                right_child->node_print(os, bf);
+                right_child->node_print(option, os);
             }
             else
             {
@@ -173,7 +185,7 @@ private:
 public:
     AVL() = default;
 
-    void add(int x)
+    void insert(int x)
     {
         if(root == nullptr)
         {
@@ -182,12 +194,13 @@ public:
         }
         else
         {
-            if(root->node_add(x)) ++sz;
+            if(root->node_insert(x)) ++sz;
         }
     }
 
-    void print(std::ostream& os, bool bf = false)
+    void print(size_t option = 0, std::ostream& os = std::cout)
     {
+        assert(option < 3);
         os << sz << ": ";
         if(root == nullptr)
         {
@@ -195,7 +208,7 @@ public:
             return;
         }
         
-        root->node_print(os, bf);
+        root->node_print(option, os);
         os << std::endl;
     }
     
@@ -239,17 +252,13 @@ public:
 int main()
 {
     AVL tree;
-    tree.print(std::cout, BALANCE_SET);
-    tree.add(2);
-    tree.print(std::cout, BALANCE_SET);
-    tree.add(3);
-    tree.add(1);
-    tree.print(std::cout, BALANCE_SET);
-    tree.remove(2);
-    tree.print(std::cout, BALANCE_SET);
-    tree.remove(3);
-    tree.print(std::cout, BALANCE_SET);
-    tree.remove(1);
-    tree.print(std::cout, BALANCE_SET);
+
+    tree.insert(5);
+    tree.insert(7);
+    tree.insert(6);
+    tree.print(AVL_HEIGHT);
+    tree.remove(5);
+    tree.print(AVL_HEIGHT);
+
     return 0;
 }
